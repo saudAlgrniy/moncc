@@ -3,34 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشغل مخصص للبث المباشر</title>
+    <title>مشغل بث مباشر</title>
     <!-- تضمين CSS الخاص بـ Video.js -->
     <link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet">
     <style>
+        /* إعدادات الخطوط */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Tajawal', sans-serif;
             text-align: center;
-            background-color: #000;
-            color: #fff;
+            background-color: #121212;
+            color: #f0f0f0;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
+
+        header {
+            background: linear-gradient(90deg, #ff5722, #ff9800);
+            padding: 20px 0;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 60%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+            background-color: #1e1e1e;
+            color: #fff;
+        }
+
+        input[type="text"]::placeholder {
+            color: #aaa;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            background: linear-gradient(90deg, #ff9800, #ff5722);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #ff5722, #d84315);
+        }
+
+        .video-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
         .video-js {
             width: 100%;
-            height: auto;
-            max-width: 720px;
-            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .live-badge {
+            display: inline-block;
+            background: #ff0000;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        footer {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 14px;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
-    <h1>مشغل بث مباشر مخصص</h1>
-    <p>أدخل رابط البث المباشر بصيغة m3u8:</p>
-    <input type="text" id="stream-url" placeholder="أدخل رابط m3u8 هنا" style="width: 60%; padding: 10px;">
-    <button onclick="playStream()" style="padding: 10px 20px; margin-top: 10px;">تشغيل</button>
+    <header>
+        <h1>مشغل بث مباشر</h1>
+    </header>
+    <main>
+        <p>أدخل رابط البث المباشر بصيغة m3u8:</p>
+        <input type="text" id="stream-url" placeholder="أدخل رابط m3u8 هنا">
+        <button onclick="playStream()">تشغيل</button>
 
-    <!-- مشغل الفيديو -->
-    <video id="video-player" class="video-js vjs-default-skin" controls autoplay playsinline></video>
+        <!-- مشغل الفيديو مع شارة البث المباشر -->
+        <div class="video-container">
+            <div id="live-badge" class="live-badge" style="display: none;">LIVE</div>
+            <video id="video-player" class="video-js vjs-default-skin" autoplay playsinline></video>
+        </div>
+    </main>
+    <footer>
+        &copy; 2024 مشغل البث المباشر | تصميم عصري وحديث
+    </footer>
 
     <!-- تضمين JavaScript الخاص بـ Video.js -->
     <script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
@@ -42,25 +146,36 @@
                 return;
             }
 
+            // عرض شارة "LIVE"
+            document.getElementById('live-badge').style.display = 'block';
+
             // إعداد مشغل Video.js
             const player = videojs('video-player', {
                 autoplay: true,
                 preload: 'auto',
-                fluid: true // استجابة المشغل لحجم الشاشة
+                fluid: true, // استجابة المشغل لحجم الشاشة
+                controls: true,
+                liveui: true // واجهة بث مباشر
             });
 
-            // التحقق من صيغة الرابط
-            const fileType = url.endsWith('.m3u8') ? 'application/x-mpegURL' : 'video/mp4';
-
-            // تعيين مصدر البث
+            // تعيين مصدر البث المباشر
             player.src({
                 src: url,
-                type: fileType
+                type: 'application/x-mpegURL'
+            });
+
+            // تعطيل التحكم في الوقت
+            player.on('loadedmetadata', () => {
+                // تشغيل الفيديو من النقطة الحالية للبث
+                player.currentTime(player.seekable().end(0));
+                // تعطيل شريط التقديم
+                const progressControl = player.controlBar.progressControl;
+                if (progressControl) progressControl.disable();
             });
 
             // تشغيل الفيديو
             player.play().catch(error => {
-                alert('حدث خطأ أثناء تشغيل الفيديو: ' + error.message);
+                alert('حدث خطأ أثناء تشغيل البث المباشر: ' + error.message);
             });
         }
     </script>
