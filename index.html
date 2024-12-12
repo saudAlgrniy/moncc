@@ -3,189 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشغل بث مباشر باستخدام Plyr</title>
-    <!-- تضمين CSS الخاص بـ Plyr -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.4/plyr.css">
+    <title>مشغل مخصص للبث المباشر</title>
+    <!-- تضمين CSS الخاص بـ Video.js -->
+    <link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet">
     <style>
-        /* إعدادات عامة */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2e3b4e, #1c2a38);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #000;
             color: #fff;
             margin: 0;
-            padding: 0;
-            text-align: center;
+            padding: 20px;
         }
-
-        h1 {
-            font-size: 2.5rem;
-            color: #ffcc00;
-            margin-top: 40px;
-        }
-
-        p {
-            font-size: 1.2rem;
-            margin-top: 10px;
-            color: #d3d3d3;
-        }
-
-        /* تصميم المدخلات والأزرار */
-        .input-container {
-            margin-top: 20px;
-        }
-
-        input {
-            padding: 15px;
-            width: 60%;
-            font-size: 1rem;
-            border: 2px solid #444;
-            border-radius: 5px;
-            background-color: #222;
-            color: #fff;
-            outline: none;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-        }
-
-        input:focus {
-            border-color: #ffcc00;
-            background-color: #333;
-        }
-
-        button {
-            padding: 15px 30px;
-            font-size: 1rem;
-            color: #fff;
-            background-color: #ffcc00;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #e5a900;
-        }
-
-        /* حاوية الفيديو */
-        .video-container {
-            max-width: 80%;
-            margin: 40px auto;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* تحسين مظهر الفيديو */
-        video {
+        .video-js {
             width: 100%;
             height: auto;
-            border-radius: 8px;
+            max-width: 720px;
+            margin: 20px auto;
         }
-
-        /* تصميم الزر عند تشغيل الفيديو */
-        .button-container {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-        }
-
-        .video-container:hover .button-container {
-            display: block;
-        }
-
-        /* زر fullscreen */
-        .fullscreen-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .fullscreen-btn:hover {
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-
     </style>
 </head>
 <body>
-    <h1>مشغل بث مباشر باستخدام Plyr</h1>
+    <h1>مشغل بث مباشر مخصص</h1>
     <p>أدخل رابط البث المباشر بصيغة m3u8:</p>
+    <input type="text" id="stream-url" placeholder="أدخل رابط m3u8 هنا" style="width: 60%; padding: 10px;">
+    <button onclick="playStream()" style="padding: 10px 20px; margin-top: 10px;">تشغيل</button>
 
-    <div class="input-container">
-        <input type="text" id="stream-url" placeholder="أدخل رابط m3u8 هنا">
-        <button onclick="playStream()">تشغيل</button>
-    </div>
+    <!-- مشغل الفيديو -->
+    <video id="video-player" class="video-js vjs-default-skin" controls autoplay playsinline></video>
 
-    <div class="video-container">
-        <div class="button-container">
-            <button onclick="playStream()">إعادة التشغيل</button>
-        </div>
-        <video id="player" controls>
-            <!-- الفيديو سيُحمّل هنا -->
-        </video>
-        <!-- زر التبديل إلى وضع Fullscreen -->
-        <button class="fullscreen-btn" onclick="toggleFullScreen()">وضع ملء الشاشة</button>
-    </div>
-
-    <!-- تضمين JavaScript الخاص بـ Plyr -->
-    <script src="https://cdn.plyr.io/3.7.4/plyr.polyfilled.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- تضمين JavaScript الخاص بـ Video.js -->
+    <script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
     <script>
-        let player;
-
         function playStream() {
-            const url = document.getElementById('stream-url').value;
+            const url = document.getElementById('stream-url').value.trim();
             if (!url) {
                 alert('يرجى إدخال رابط بث مباشر صحيح.');
                 return;
             }
 
-            const video = document.getElementById('player');
+            // إعداد مشغل Video.js
+            const player = videojs('video-player', {
+                autoplay: true,
+                preload: 'auto',
+                fluid: true // استجابة المشغل لحجم الشاشة
+            });
 
-            // التحقق إذا كان المتصفح يدعم HLS
-            if (Hls.isSupported()) {
-                const hls = new Hls();
+            // التحقق من صيغة الرابط
+            const fileType = url.endsWith('.m3u8') ? 'application/x-mpegURL' : 'video/mp4';
 
-                // تحميل الفيديو من URL
-                hls.loadSource(url);
+            // تعيين مصدر البث
+            player.src({
+                src: url,
+                type: fileType
+            });
 
-                // ربط HLS مع العنصر <video>
-                hls.attachMedia(video);
-
-                // بدء تشغيل الفيديو
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // إذا كان المتصفح يدعم HLS بشكل ناتيفي (مثل Safari)
-                video.src = url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
-                });
-            }
-
-            // تفعيل Plyr
-            player = new Plyr('#player');
-        }
-
-        // دالة لتبديل وضع ملء الشاشة
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                player.fullscreen.enter();  // دخول وضع ملء الشاشة
-            } else {
-                document.exitFullscreen();  // الخروج من وضع ملء الشاشة
-            }
+            // تشغيل الفيديو
+            player.play().catch(error => {
+                alert('حدث خطأ أثناء تشغيل الفيديو: ' + error.message);
+            });
         }
     </script>
 </body>
