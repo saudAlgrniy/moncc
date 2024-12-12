@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشغل بث مباشر m3u8</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        video {
+            width: 80%;
+            max-width: 720px;
+            margin-top: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>مشغل بث مباشر</h1>
+    <p>أدخل رابط البث المباشر بصيغة m3u8:</p>
+    <input type="text" id="stream-url" placeholder="أدخل رابط m3u8 هنا" style="width: 60%; padding: 10px;">
+    <button onclick="playStream()" style="padding: 10px 20px; margin-top: 10px;">تشغيل</button>
+    
+    <video id="video-player" controls autoplay playsinline></video> <!-- إضافة playsinline هنا -->
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        function playStream() {
+            const video = document.getElementById('video-player');
+            const url = document.getElementById('stream-url').value;
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // للمتصفحات التي تدعم m3u8 تلقائياً (مثل Safari)
+                video.src = url;
+                video.addEventListener('loadedmetadata', function () {
+                    video.play();
+                });
+            } else {
+                alert('المتصفح الخاص بك لا يدعم تشغيل m3u8.');
+            }
+        }
+    </script>
+</body>
+</html>
